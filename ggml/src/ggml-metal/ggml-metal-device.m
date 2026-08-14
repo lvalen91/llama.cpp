@@ -2004,7 +2004,8 @@ bool ggml_metal_buffer_cpy_tensor(ggml_metal_buffer_t buf_dst, const struct ggml
     const size_t size = ggml_nbytes(src);
 
     // if both buffers are shared, we can use memcpy directly
-    if (buf_dst->is_shared && buf_src->is_shared) {
+    // managed buffers can hold stale CPU or GPU data, so use the blit path instead
+    if (buf_dst->is_shared && buf_src->is_shared && !buf_dst->dev->props.use_managed_buffers) {
         memcpy(dst->data, src->data, size);
         return true;
     }
